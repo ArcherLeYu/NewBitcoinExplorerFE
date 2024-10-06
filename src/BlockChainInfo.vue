@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <h1>Bitcoin Explorer</h1>
-    <div class="block-info">
+    <div v-if="blockchainInfo" class="block-info">
       <h2>Blockchain Info</h2>
       <p><strong>Block Height:</strong> {{ blockchainInfo.blocks }}</p>
       <p><strong>Chain:</strong> {{ blockchainInfo.chain }}</p>
@@ -20,11 +20,15 @@
       <p><strong>Automatic Pruning:</strong> {{ blockchainInfo.automaticPruning ? 'Yes' : 'No' }}</p>
       <p><strong>Best Block Hash:</strong> {{ blockchainInfo.bestBlockHash }}</p>
     </div>
+    <div v-if="error" class="error-message">
+      <p>Error: {{ error }}</p>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, ref, onMounted } from 'vue'
+import axios from 'axios' // 引入 axios
 
 // 定义区块链信息的类型
 interface BlockchainInfo {
@@ -47,30 +51,57 @@ interface BlockchainInfo {
 }
 
 export default defineComponent({
-  name: 'App',
-  data () {
+  name: 'BlockChainInfo',
+  setup () {
+    const blockchainInfo = ref<BlockchainInfo | null>(null)
+    const error = ref<string | null>(null)
+
+    // 在组件挂载时从后端获取数据
+    onMounted(async () => {
+      console.log('Component mounted. Preparing to fetch blockchain information...') // 打印日志，表示组件挂载成功
+
+      try {
+        console.log('Sending request to backend API at http://127.0.0.1:8081/blockchain-info') // 打印日志，表示即将发送请求
+        // 这里替换为你的后端 API 地址
+        const response = await axios.get('http://127.0.0.1:8081/blockchain-info')
+        console.log('Received response from backend:', response) // 打印完整的响应，帮助排查数据结构问题
+        // 将下划线命名的数据转换为驼峰式命名
+        blockchainInfo.value = convertToCamelCase(response.data)
+        console.log('Blockchain information successfully set:', blockchainInfo.value) // 打印日志，表示数据设置成功
+      } catch (err) {
+        console.error('Error occurred while fetching blockchain information:', err) // 打印详细错误
+        error.value = 'Failed to fetch blockchain information.'
+      }
+    })
+
     return {
-      blockchainInfo: {
-        blocks: 754312,
-        chain: 'main',
-        chainwork: '0000000000000000000b4d0f5efb7eaa49d5f0e6143f45c5e0bc32fdd8c1a112',
-        difficulty: 15348939240.0123,
-        headers: 754312,
-        initialBlockDownload: false,
-        medianTime: 1629318000,
-        pruneTargetSize: 0,
-        pruned: false,
-        pruneHeight: 0,
-        sizeOnDisk: 3402789632,
-        time: 1629321000,
-        verificationProgress: 0.999876,
-        warnings: 'No warnings',
-        automaticPruning: false,
-        bestBlockHash: '0000000000000000000b4d0f5efb7eaa49d5f0e6143f45c5e0bc32fdd8c1a112'
-      } as BlockchainInfo
+      blockchainInfo,
+      error
     }
   }
 })
+
+// 处理后端返回的数据并进行转换
+function convertToCamelCase (data: any): BlockchainInfo {
+  return {
+    blocks: data.blocks,
+    chain: data.chain,
+    chainwork: data.chainwork,
+    difficulty: data.difficulty,
+    headers: data.headers,
+    initialBlockDownload: data.initialblockdownload,
+    medianTime: data.mediantime,
+    pruneTargetSize: data.prune_target_size,
+    pruned: data.pruned,
+    pruneHeight: data.pruneheight,
+    sizeOnDisk: data.size_on_disk,
+    time: data.time,
+    verificationProgress: data.verificationprogress,
+    warnings: data.warnings,
+    automaticPruning: data.automatic_pruning,
+    bestBlockHash: data.bestblockhash
+  }
+}
 </script>
 
 <style scoped>
@@ -97,5 +128,11 @@ export default defineComponent({
 
 .block-info h2 {
   margin-bottom: 20px;
+}
+
+.error-message {
+  color: red;
+  font-weight: bold;
+  margin-top: 20px;
 }
 </style>
