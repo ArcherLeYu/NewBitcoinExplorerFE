@@ -2,23 +2,29 @@
   <div id="app">
     <h1>Bitcoin Explorer</h1>
     <div v-if="blockchainInfo" class="block-info">
+      <!-- Existing Blockchain Info Display -->
       <h2>Blockchain Info</h2>
       <p><strong>Block Height:</strong> {{ blockchainInfo.blocks }}</p>
-      <p><strong>Chain:</strong> {{ blockchainInfo.chain }}</p>
-      <p><strong>Chain Work:</strong> {{ blockchainInfo.chainwork }}</p>
-      <p><strong>Difficulty:</strong> {{ blockchainInfo.difficulty }}</p>
-      <p><strong>Headers:</strong> {{ blockchainInfo.headers }}</p>
-      <p><strong>Initial Block Download:</strong> {{ blockchainInfo.initialBlockDownload ? 'Yes' : 'No' }}</p>
-      <p><strong>Median Time:</strong> {{ blockchainInfo.medianTime }}</p>
-      <p><strong>Prune Target Size:</strong> {{ blockchainInfo.pruneTargetSize }}</p>
-      <p><strong>Pruned:</strong> {{ blockchainInfo.pruned ? 'Yes' : 'No' }}</p>
-      <p><strong>Prune Height:</strong> {{ blockchainInfo.pruneHeight }}</p>
-      <p><strong>Size on Disk:</strong> {{ blockchainInfo.sizeOnDisk }}</p>
-      <p><strong>Time:</strong> {{ blockchainInfo.time }}</p>
-      <p><strong>Verification Progress:</strong> {{ blockchainInfo.verificationProgress }}</p>
-      <p><strong>Warnings:</strong> {{ blockchainInfo.warnings }}</p>
-      <p><strong>Automatic Pruning:</strong> {{ blockchainInfo.automaticPruning ? 'Yes' : 'No' }}</p>
-      <p><strong>Best Block Hash:</strong> {{ blockchainInfo.bestBlockHash }}</p>
+<!--      <p><strong>Chain:</strong> {{ blockchainInfo.chain }}</p>-->
+<!--      <p><strong>Chain Work:</strong> {{ blockchainInfo.chainwork }}</p>-->
+<!--      <p><strong>Difficulty:</strong> {{ blockchainInfo.difficulty }}</p>-->
+<!--      <p><strong>Headers:</strong> {{ blockchainInfo.headers }}</p>-->
+<!--      <p><strong>Initial Block Download:</strong> {{ blockchainInfo.initialBlockDownload ? 'Yes' : 'No' }}</p>-->
+<!--      <p><strong>Median Time:</strong> {{ blockchainInfo.medianTime }}</p>-->
+<!--      <p><strong>Prune Target Size:</strong> {{ blockchainInfo.pruneTargetSize }}</p>-->
+<!--      <p><strong>Pruned:</strong> {{ blockchainInfo.pruned ? 'Yes' : 'No' }}</p>-->
+<!--      <p><strong>Prune Height:</strong> {{ blockchainInfo.pruneHeight }}</p>-->
+<!--      <p><strong>Size on Disk:</strong> {{ blockchainInfo.sizeOnDisk }}</p>-->
+<!--      <p><strong>Time:</strong> {{ blockchainInfo.time }}</p>-->
+<!--      <p><strong>Verification Progress:</strong> {{ blockchainInfo.verificationProgress }}</p>-->
+<!--      <p><strong>Warnings:</strong> {{ blockchainInfo.warnings }}</p>-->
+<!--      <p><strong>Automatic Pruning:</strong> {{ blockchainInfo.automaticPruning ? 'Yes' : 'No' }}</p>-->
+<!--      <p><strong>Best Block Hash:</strong> {{ blockchainInfo.bestBlockHash }}</p>-->
+    </div>
+    <div v-if="bitcoinPrice || bitcoinVolume" class="offchain-info">
+      <h2>Market Data</h2>
+      <p v-if="bitcoinPrice"><strong>Current Bitcoin Price:</strong> ${{ bitcoinPrice }}</p>
+      <p v-if="bitcoinVolume"><strong>Current Bitcoin Volume:</strong> ${{ bitcoinVolume }}</p>
     </div>
     <div v-if="error" class="error-message">
       <p>Error: {{ error }}</p>
@@ -55,27 +61,42 @@ export default defineComponent({
   setup () {
     const blockchainInfo = ref<BlockchainInfo | null>(null)
     const error = ref<string | null>(null)
+    const bitcoinPrice = ref<number | null>(null)
+    const bitcoinVolume = ref<number | null>(null)
 
     // 在组件挂载时从后端获取数据
     onMounted(async () => {
-      console.log('Component mounted. Preparing to fetch blockchain information...') // 打印日志，表示组件挂载成功
-
+      // Existing blockchain info fetch
       try {
-        console.log('Sending request to backend API at http://127.0.0.1:8081/blockchain-info') // 打印日志，表示即将发送请求
-        // 这里替换为你的后端 API 地址
-        const response = await axios.get('http://127.0.0.1:8081/blockchain-info')
-        console.log('Received response from backend:', response) // 打印完整的响应，帮助排查数据结构问题
-        // 将下划线命名的数据转换为驼峰式命名
-        blockchainInfo.value = convertToCamelCase(response.data)
-        console.log('Blockchain information successfully set:', blockchainInfo.value) // 打印日志，表示数据设置成功
+        const blockchainResponse = await axios.get('http://127.0.0.1:8081/blockchain-info')
+        blockchainInfo.value = convertToCamelCase(blockchainResponse.data)
       } catch (err) {
-        console.error('Error occurred while fetching blockchain information:', err) // 打印详细错误
+        console.error('Error fetching blockchain info:', err)
         error.value = 'Failed to fetch blockchain information.'
       }
-    })
 
+      // Fetching latest price
+      try {
+        const priceResponse = await axios.get('http://127.0.0.1:8081/latest-price')
+        bitcoinPrice.value = priceResponse.data
+      } catch (err) {
+        console.error('Error fetching bitcoin price:', err)
+        error.value = 'Failed to fetch bitcoin price.'
+      }
+
+      // Fetching latest volume
+      try {
+        const volumeResponse = await axios.get('http://127.0.0.1:8081/latest-volume')
+        bitcoinVolume.value = volumeResponse.data
+      } catch (err) {
+        console.error('Error fetching bitcoin volume:', err)
+        error.value = 'Failed to fetch bitcoin volume.'
+      }
+    })
     return {
       blockchainInfo,
+      bitcoinPrice,
+      bitcoinVolume,
       error
     }
   }
@@ -121,13 +142,23 @@ function convertToCamelCase (data: any): BlockchainInfo {
   background-color: #f9f9f9;
 }
 
-.block-info p {
-  font-size: 16px;
-  line-height: 1.6;
+.offchain-info {
+  border: 1px dashed #4CAF50; /* 使用虚线边框和不同的颜色 */
+  padding: 20px;
+  border-radius: 8px;
+  width: 60%;
+  margin: 30px auto; /* 添加更多的上下边距以区分 */
+  background-color: #e8f5e9; /* 浅绿色背景提高区分度 */
 }
 
-.block-info h2 {
-  margin-bottom: 20px;
+.offchain-info p {
+  font-size: 16px;
+  line-height: 1.8; /* 调整行高 */
+  color: #388E3C; /* 文本使用深绿色 */
+}
+
+.offchain-info h2 {
+  color: #2E7D32; /* 标题使用更深的绿色 */
 }
 
 .error-message {
