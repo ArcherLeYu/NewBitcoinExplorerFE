@@ -72,8 +72,8 @@ export default defineComponent({
       maintainAspectRatio: true,
       scales: {
         y: {
-          min: 68200, // Set the minimum value of the Y-axis
-          max: 68600, // Set the maximum value of the Y-axis
+          min: 68000, // Set the minimum value of the Y-axis
+          max: 69000, // Set the maximum value of the Y-axis
           title: {
             display: true,
             text: 'Price in USD'
@@ -82,7 +82,7 @@ export default defineComponent({
         x: {
           title: {
             display: true,
-            text: 'Date'
+            text: ''
           }
         }
       }
