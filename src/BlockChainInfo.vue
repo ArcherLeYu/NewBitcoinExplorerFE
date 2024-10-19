@@ -24,10 +24,7 @@
     <div v-if="bitcoinPrice || bitcoinVolume" class="offchain-info">
       <h2>Market Data</h2>
       <p v-if="bitcoinPrice"><strong>Current Bitcoin Price:</strong> ${{ bitcoinPrice }}</p>
-      <p v-if="bitcoinVolume"><strong>Current Bitcoin Volume:</strong> ${{ bitcoinVolume }}</p>
-    </div>
-    <div v-if="error" class="error-message">
-      <p>Error: {{ error }}</p>
+      <p v-if="bitcoinVolume"><strong>Current Bitcoin Volume:</strong> {{ bitcoinVolume }}</p>
     </div>
   </div>
 </template>
@@ -70,6 +67,7 @@ export default defineComponent({
       try {
         const blockchainResponse = await axios.get('http://127.0.0.1:8081/blockchain-info')
         blockchainInfo.value = convertToCamelCase(blockchainResponse.data)
+        console.log('Fetched chaininfo:', blockchainInfo.value)
       } catch (err) {
         console.error('Error fetching blockchain info:', err)
         error.value = 'Failed to fetch blockchain information.'
@@ -79,6 +77,7 @@ export default defineComponent({
       try {
         const priceResponse = await axios.get('http://127.0.0.1:8081/latest-price')
         bitcoinPrice.value = priceResponse.data
+        console.log('Fetched Bitcoin Price:', bitcoinPrice.value)
       } catch (err) {
         console.error('Error fetching bitcoin price:', err)
         error.value = 'Failed to fetch bitcoin price.'
@@ -88,11 +87,16 @@ export default defineComponent({
       try {
         const volumeResponse = await axios.get('http://127.0.0.1:8081/latest-volume')
         bitcoinVolume.value = volumeResponse.data
+        console.log('Fetched Bitcoin Volume:', bitcoinVolume.value)
       } catch (err) {
         console.error('Error fetching bitcoin volume:', err)
         error.value = 'Failed to fetch bitcoin volume.'
       }
     })
+
+    // Additional logs to verify data before rendering
+    console.log('Price before rendering:', bitcoinPrice.value) // Add this
+    console.log('Volume before rendering:', bitcoinVolume.value)// Add this
     return {
       blockchainInfo,
       bitcoinPrice,
