@@ -51,7 +51,7 @@ export default defineComponent({
     onMounted(async () => {
       // Fetching latest price
       try {
-        const priceResponse = await axios.get('http://127.0.0.1:8081/latest-price')
+        const priceResponse = await axios.get('http://ec2-18-222-131-51.us-east-2.compute.amazonaws.com:8081/latest-price')
         bitcoinPrice.value = priceResponse.data
         console.log('Fetched Bitcoin Price:', bitcoinPrice.value)
       } catch (err) {
@@ -61,7 +61,7 @@ export default defineComponent({
 
       // Fetching latest volume
       try {
-        const volumeResponse = await axios.get('http://127.0.0.1:8081/latest-volume')
+        const volumeResponse = await axios.get('http://ec2-18-222-131-51.us-east-2.compute.amazonaws.com:8081/latest-volume')
         bitcoinVolume.value = volumeResponse.data
         console.log('Fetched Bitcoin Volume:', bitcoinVolume.value)
       } catch (err) {
@@ -71,7 +71,7 @@ export default defineComponent({
 
       // Fetch the latest block summaries
       try {
-        const blocksResponse = await axios.get('http://127.0.0.1:8081/blocks-summary')
+        const blocksResponse = await axios.get('http://ec2-18-222-131-51.us-east-2.compute.amazonaws.com:8081/blocks-summary')
         latestBlocks.value = blocksResponse.data.slice(0, 5) // Store the latest 5 blocks
         latestOneBlock.value = blocksResponse.data[0] // Store the most recent block as a single object
         console.log('Fetched latest 5 block summaries:', latestBlocks.value)
@@ -83,7 +83,7 @@ export default defineComponent({
 
       // fetching latest 10
       try {
-        const response = await axios.get('http://127.0.0.1:8081/latest-10-prices')
+        const response = await axios.get('http://ec2-18-222-131-51.us-east-2.compute.amazonaws.com:8081/latest-10-prices')
         bitcoinPriceList.value = response.data.prices
         console.log('Fetched 10 latest Bitcoin Prices:', bitcoinPriceList.value)
       } catch (err) {
